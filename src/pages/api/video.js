@@ -2,6 +2,9 @@ import { ObjectId } from "bson";
 import nc from "next-connect";
 import connectToDatabase from "src/utils/mongodb";
 import upload from "src/utils/upload";
+import jwt from 'next-auth/jwt';
+
+const secret = process.env.JWT_SECRET;
 
 const handler = nc()  
   .use(upload.single('file'))
@@ -9,8 +12,11 @@ const handler = nc()
     res.send("Hello world");
   })
   .post(async (req, res) => {
-    res.json({ hello: "world" });
     const { title, authorId, authorName, authorAvatar, videoUrl } = req.body;
+    
+    const token = await jwt.getToken({ req, secret });
+    
+    if (token) {
     const { db } = await connectToDatabase()
     const collection = db.collection('videos');
 
@@ -26,7 +32,10 @@ const handler = nc()
     });
 
     return res.status(200).json({ ok: true });
-  })
+  }
+
+  return res.status(401).end();
+})
   .put(async (req, res) => {
     res.end("async/await is also supported!");
   })

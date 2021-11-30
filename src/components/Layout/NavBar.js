@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import {makeStyles, 
   Hidden, 
@@ -19,6 +20,7 @@ import {makeStyles,
   import VideoLibrary from '@material-ui/icons/VideoLibrary';
   import History from '@material-ui/icons/History';
 import { AccountCircle } from '@material-ui/icons';
+import { signIn } from 'next-auth/client';
   
 
   const useStyles = makeStyles((theme) => ({
@@ -111,21 +113,51 @@ function NavBar() {
         })}
       </List>
       <Divider />
+      <Box>
+        {!session ? (
       <Box mx={4} my={2}>
             <Typography variant="body2">
               Faça login para curtir vídeos, comentar e se inscrever.
             </Typography>
             <Box mt={2}>
               <Button
-                variant="outlined"
                 color="secondary"
+                variant="outlined"
                 startIcon={<AccountCircle />}
-              >
-                Fazer login
-              </Button>
-            </Box>
+                onClick={() => signIn()}
+              >Fazer Login
+          </Button>
+        </Box>
       </Box>
-    </Box>
+          ) : (
+           <List
+              subheader={
+                <ListSubheader component="div" id="nested-list-subheader">
+                  INSCRIÇÕES
+                </ListSubheader>
+              }
+            >
+              {Subscriptions.map((item) => (
+                <ListItem
+                key={item.id}
+                buttonclasses={{ root: classes.listItem }}
+                selected={isSelected(item)}
+                >
+                <ListItemIcon>
+                  <Avatar className={classes.avatar}>A</Avatar>
+                </ListItemIcon>
+                <ListItemText
+                  classes={{
+                    primary: classes.listItemText,
+                  }}
+                  primary={item.name}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          )}
+      </Box>
+     </Box>
   );
 
   return (

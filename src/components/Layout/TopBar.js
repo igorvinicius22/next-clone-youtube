@@ -4,13 +4,19 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Box from '@material-ui/core/Box';
 import Paper from '@material-ui/core/Paper';
 import InputBase from '@material-ui/core/InputBase';
+import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
 import Hidden from '@material-ui/core/Hidden';
-
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import { AccountCircle, Apps, MoreVert, SingleBedOutlined, VideoCall } from '@material-ui/icons';
 import { Button } from '@material-ui/core';
+import Brightness7Icon from '@material-ui/icons/Brightness7'
+import Brightness4Icon from '@material-ui/icons/Brightness4'
+import { signIn, signOut, useSession } from 'next-auth/client';
+import RouterLink from 'next/link';
+import useSettings from 'src/hooks/useSettings';
+import { THEMES } from 'src/utils/constants';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -23,6 +29,26 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  link: {
+    cursor: 'pointer',
+    fontWeight: theme.typography.fontWeightMedium,
+    '& + &': {
+      marginLeft: theme.spacing(2),
+    },
+  },
+  divider: {
+    width: 1,
+    height: 32,
+    marginLeft: theme.spacing(2),
+    marginRight: theme.spacing(2),
+  },
+  avatar: {
+    height: 32,
+    width: 32,
+  },
+  popover: {
+    width:200,
   },
   logo: {
     cursor: 'pointer',
@@ -39,17 +65,32 @@ const useStyles = makeStyles((theme) => ({
   input: {
     flex: 1,
   },
+  icons: {
+    paddingRight: theme.spacing(2),
+  },
 }));
 
-function TopBar() {
+const TopBar = ({ className, ...rest }) => {
   const classes = useStyles();
+  const [session] = useSession();
+  const { settings, saveSettings } = useSettings();
 
   return (
-    <AppBar className={classes.root} color="default">
+    <AppBar className={classes.root} color="default" {...rest}>
       <Toolbar className={classes.toolbar}>
         <Box display="flex" alignItems="center" >
           <MenuIcon />
-          <img src="/logoAccontech.svg" alt="logo" className={classes.logo} />
+          <RouterLink href="/">
+          <img 
+          className={classes.logo}
+          alt="logo" 
+          src={
+            settings.theme === THEMES.DARK
+            ? '/logoAccontech.svg'
+            : '/logoAccontech.svg'
+            } 
+          />
+        </RouterLink>
         </Box>
         <Hidden mdDown>
           <Box>
@@ -59,7 +100,7 @@ function TopBar() {
               placeholder="Pesquisar"
               inputProps={{ 'aria-label': 'search google maps'}}
             />
-            <IconButton type="submit" aria-label="search">
+            <IconButton type="submit" className={classes.iconButton} aria-label="search">
               <SearchIcon />              
             </IconButton>
           </Paper>
@@ -67,6 +108,17 @@ function TopBar() {
         </Hidden>
         
         <Box display="flex">
+          <IconButton className={classes.icons}>
+            {settings.theme === THEMES.DARK ? (
+              <Brightness7Icon
+                onClick={() => saveSettings({ theme: THEMES.LIGHT })}
+              />
+            ) : (
+              <Brightness4Icon
+                onClick={() => saveSettings({ theme: THEMES.DARK })}
+              />
+            )}
+          </IconButton>
           <IconButton className={classes.icons}>
             <VideoCall />
           </IconButton>
@@ -76,14 +128,25 @@ function TopBar() {
           <IconButton className={classes.icons}>
             <MoreVert />
           </IconButton>
+          {!session ? (
           <Button
           color="secondary"
           component="a"
           variant="outlined"
           startIcon={<AccountCircle />}
-          //onClick={() => signIn('google')}
+          onClick={() => signIn()}
           >Fazer Login
           </Button>
+          ) : (
+            <Box display="flex" alignItems="center">
+              <Avatar
+                onClick={() => signOut()}
+                alt="User"
+                className={classes.avatar}
+                src={session?.user?.image}
+              />
+            </Box>
+          )}
         </Box>
       </Toolbar>
     </AppBar>

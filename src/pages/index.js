@@ -5,6 +5,7 @@ import Layout from 'src/components/Layout';
 import VideoCard from 'src/components/VideoCard';
 import { StylesContext } from '@material-ui/styles';
 import { getVideos } from 'src/database/getVideos';
+import { getSession } from 'next-auth/client';
 //final dos imports
 
 
@@ -25,13 +26,16 @@ function Home({ data }) {
   );
 }
 
-export async function getStaticProps() {
+export async function getStaticProps(context) {
+  const session = await getSession(context);
+
   const data = await getVideos();
 
   return {
     props: {
       data: JSON.parse(JSON.stringify(data)),
     },
+    revalidate: 5,
   };
 }
 
